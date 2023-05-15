@@ -18,7 +18,7 @@ REST API додаток забезпечує взаємодію між кліє�
 Щоб встановити REST API додаток, склонуйте репозиторій з GitHub та встановіть залежності, виконавши наступні команди в терміналі:
 
 ```bash
-git clone https://github.com/username/rest-api-app.git
+git clone https://github.com/alexveryk/REST-API-application
 cd rest-api-app
 npm install
 ```
@@ -54,7 +54,7 @@ npm start
   "id": 1,
   "name": "Alec Howard",
   "email": "Donec.elementum@scelerisquescelerisquedui.net",
-  "phone
+  "phone": "(111) 111-2233"
 }
 ```
 
