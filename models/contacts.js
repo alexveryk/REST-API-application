@@ -1,5 +1,4 @@
 const fs = require("fs").promises;
-const { constants } = require("buffer");
 const { nanoid } = require("nanoid");
 const path = require("path");
 
@@ -19,11 +18,12 @@ const getContactById = async (contactId) => {
 const removeContact = async (contactId) => {
   const contacts = await listContacts();
   const index = contacts.findIndex((contact) => contact.id === contactId);
+
   if (index === -1) {
     return null;
   }
   const [result] = contacts.splice(index, 1);
-  await fs.writeFile(contactsPath, JSON.stringify(constants, null, 2));
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
   return result;
 };
 
@@ -41,11 +41,14 @@ const addContact = async (body) => {
 
 const updateContact = async (contactId, body) => {
   const contacts = await listContacts();
-  const index = constants.findIndex((contact) => contact.id === contactId);
+  const index = contacts.findIndex((contact) => contact.id === contactId);
+  console.log(index);
   if (index === -1) {
     return null;
   }
-  contacts[index] = { contactId, ...body };
+
+  contacts[index] = { id: contactId, ...body };
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
   return contacts[index];
 };
 

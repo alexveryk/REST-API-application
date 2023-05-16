@@ -42,7 +42,6 @@ router.get("/:contactId", async (req, res, next) => {
 router.post("/", async (req, res, next) => {
   try {
     const errorValidate = schema.validate(req.body);
-    console.log("ERROR: ===>>>", errorValidate);
     if (errorValidate.error) {
       const error = new Error("missing required name field");
       error.status = 400;
@@ -57,11 +56,43 @@ router.post("/", async (req, res, next) => {
 });
 
 router.delete("/:contactId", async (req, res, next) => {
-  res.json({ message: "template message" });
+  try {
+    const { contactId } = req.params;
+    const result = await contactService.removeContact(contactId);
+
+    if (!result) {
+      const error = new Error(`Contact width: ${contactId} not found`);
+      error.status = 404;
+      throw error;
+    }
+
+    res.send("contact deleted");
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.put("/:contactId", async (req, res, next) => {
-  res.json({ message: "template message" });
+  try {
+    const errorValidate = schema.validate(req.body);
+    if (errorValidate.error) {
+      const error = new Error("missing required name field");
+      error.status = 400;
+      throw error;
+    }
+    const { contactId } = req.params;
+
+    const result = await contactService.updateContact(contactId, req.body);
+    console.log("result", result);
+    if (!result) {
+      const error = new Error(`Contact width: ${contactId} not found`);
+      error.status = 404;
+      throw error;
+    }
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = router;
