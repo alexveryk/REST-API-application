@@ -113,3 +113,68 @@ npm start
   "error": "Contact with id: 3 not found"
 }
 ```
+
+### Оновлення контакту за його ідентифікатором
+
+Метод: PUT
+
+Шлях: `/:contactId`
+
+Параметри:
+
+- `contactId` - ідентифікатор контакту, який треба оновити
+
+Приклад тіла запиту:
+
+```json
+{
+  "name": "Alec Howard",
+  "email": "Donec.elementum@scelerisquescelerisquedui.net",
+  "phone": "(111) 111-2233"
+}
+```
+
+Приклад відповіді:
+
+```json
+{
+  "id": 1,
+  "name": "Alec Howard",
+  "email": "Donec.elementum@scelerisquescelerisquedui.net",
+  "phone": "(111) 111-2233"
+}
+```
+
+Якщо контакт з таким ідентифікатором не знайдено, сервер поверне відповідь з кодом статусу 404 та повідомленням про те, що контакт не знайдено:
+
+```json
+{
+  "error": "Contact with id: <contactId> not found."
+}
+```
+
+### Видалення контакту за його ідентифікатором
+
+Метод: DELETE
+
+Шлях: `/:contactId`
+
+Параметри:
+
+- `contactId` - ідентифікатор контакту, який треба видалити
+
+Приклад відповіді:
+
+```json
+{
+  "message": "contact deleted"
+}
+```
+
+Якщо контакт з таким ідентифікатором не знайдено, сервер поверне відповідь з кодом статусу 404 та повідомленням про те, що контакт не знайдено:
+
+```json
+{
+  "error": "Contact with id: <contactId> not found."
+}
+```
