@@ -102,7 +102,7 @@ const update = async (req, res, next) => {
 const updateStatus = async (req, res, next) => {
   try {
     const errorValidate = favoriteSchema.validate(req.body);
-    console.log(Boolean(errorValidate.error));
+
     if (errorValidate.error) {
       const error = new Error("missing required name field");
       error.status = 400;
@@ -110,8 +110,6 @@ const updateStatus = async (req, res, next) => {
     }
     const { contactId } = req.params;
 
-    console.log("PARAMS:  => ", req.params);
-    console.log("BODY:  => ", req.body);
     const result = await Contact.findByIdAndUpdate(contactId, req.body);
     res.status(200).json(result);
   } catch (error) {
