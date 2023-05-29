@@ -2,7 +2,11 @@ const express = require("express");
 
 const controllers = require("../../controllers/contacts");
 
+const { authentication } = require("../../middleware/authentication");
+
 const router = express.Router();
+
+router.use(authentication);
 
 router.get("/", controllers.getAll);
 

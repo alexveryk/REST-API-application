@@ -1,6 +1,9 @@
 const User = require("../models/users");
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const { SECRET_KEY } = process.env;
 
 const Schema = Joi.object({
   email: Joi.string().email().required(),
@@ -40,9 +43,51 @@ const register = async (req, res, next) => {
   }
 };
 
-const login = async (req, res, next) => {};
+const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ error: "Email or password is wrong" });
+    }
+
+    const passwordCompare = await bcrypt.compare(password, user.password);
+    if (!passwordCompare) {
+      return res.status(401).json({ error: "Email or password is wrong" });
+    }
+
+    const payload = {
+      id: user._id,
+    };
+
+    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
+    await User.findByIdAndUpdate(user._id, { token });
+
+    res.json({ token: token });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const current = async (req, res, next) => {
+  const { email, subscription } = req.user;
+  res.json({ email, subscription });
+};
+
+const logout = async (req, res, next) => {
+  try {
+    const { _id } = req.user;
+    await User.findByIdAndUpdate(_id, { token: "" });
+    res.json({ message: "Logged out" });
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   register,
   login,
+  current,
+  logout,
 };
