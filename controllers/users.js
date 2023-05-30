@@ -96,7 +96,7 @@ const subscription = async (req, res, next) => {
       throw error;
     }
 
-    const { contactId: userId } = req.params;
+    const { userId } = req.params;
     console.log(req.params);
 
     const updatedUser = await User.findByIdAndUpdate(
