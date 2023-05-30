@@ -14,6 +14,6 @@ router.get("/current", authentication, controller.current);
 
 router.post("/logout", authentication, controller.logout);
 
-router.patch("/:contactId", authentication, controller.subscription);
+router.patch("/:userId", authentication, controller.subscription);
 
 module.exports = router;
