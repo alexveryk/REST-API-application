@@ -79,7 +79,39 @@ const logout = async (req, res, next) => {
   try {
     const { _id } = req.user;
     await User.findByIdAndUpdate(_id, { token: "" });
-    res.json({ message: "Logged out" });
+    res.status(204).json({ message: "No Content" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const subscription = async (req, res, next) => {
+  try {
+    const { subscription } = req.body;
+    const validSubscriptions = ["starter", "pro", "business"];
+
+    if (!validSubscriptions.includes(subscription)) {
+      const error = new Error("Invalid subscription value");
+      error.status = 400;
+      throw error;
+    }
+
+    const { contactId: userId } = req.params;
+    console.log(req.params);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { subscription },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      const error = new Error(`User with ID ${userId} not found`);
+      error.status = 404;
+      throw error;
+    }
+
+    res.json(updatedUser);
   } catch (error) {
     next(error);
   }
@@ -90,4 +122,5 @@ module.exports = {
   login,
   current,
   logout,
+  subscription,
 };
