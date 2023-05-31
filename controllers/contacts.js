@@ -16,7 +16,13 @@ const favoriteSchema = Joi.object({
 
 const getAll = async (req, res, next) => {
   try {
-    const result = await Contact.find();
+    const { _id: owner } = req.user;
+
+    const { page = 1, limit = 10, favorite = [true, false] } = req.query;
+
+    const skip = (page - 1) * limit;
+    const result = await Contact.find({ owner, favorite }, "", { skip, limit });
+    console.log("ALL");
     res.json(result);
   } catch (error) {
     next(error);
@@ -42,15 +48,20 @@ const getById = async (req, res, next) => {
 
 const create = async (req, res, next) => {
   try {
+    console.log(req.user);
+    const { _id: owner } = req.user;
+    console.log("owner", owner);
+
     const errorValidate = schema.validate(req.body);
 
     if (errorValidate.error) {
+      console.log();
       const error = new Error("missing required name field");
       error.status = 400;
       throw error;
     }
 
-    const result = await Contact.create(req.body);
+    const result = await Contact.create({ ...req.body, owner });
     res.status(201).json(result);
   } catch (error) {
     next(error);
