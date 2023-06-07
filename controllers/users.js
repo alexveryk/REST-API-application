@@ -20,8 +20,6 @@ const register = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    console.log(email);
-
     const { error } = Schema.validate(req.body);
 
     if (error) {
