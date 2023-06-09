@@ -6,12 +6,18 @@ const gravatar = require("gravatar");
 const path = require("path");
 const fs = require("fs").promises;
 const Jimp = require("jimp");
+const { nanoid } = require("nanoid");
+const sendEmail = require("../helpers/sendEmail");
 
-const { SECRET_KEY } = process.env;
+const { SECRET_KEY, BASE_URL } = process.env;
 
 const Schema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
+});
+
+const ResendingSchema = Joi.object({
+  email: Joi.string().email().required(),
 });
 
 const avatarDir = path.join(__dirname, "../", "public", "avatars");
@@ -35,11 +41,22 @@ const register = async (req, res, next) => {
 
     const avatarURL = gravatar.url(email);
 
+    const verificationToken = nanoid();
+
     const newUser = await User.create({
       ...req.body,
       password: hashedPassword,
       avatarURL,
+      verificationToken,
     });
+
+    const verifyEmail = {
+      to: email,
+      subject: "Verify email",
+      html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${verificationToken}">Click here to verify your email</a>`,
+    };
+
+    sendEmail(verifyEmail);
 
     res.status(201).json({
       user: {
@@ -52,13 +69,72 @@ const register = async (req, res, next) => {
   }
 };
 
+const verification = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await User.findOne({ verificationToken });
+    if (!user) {
+      const error = new Error("User not found");
+      error.status = 404;
+      throw error;
+    }
+    await User.findByIdAndUpdate(user._id, {
+      verify: true,
+      verificationToken: "",
+    });
+    res.json({
+      message: "Verification successful",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const verificationResending = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const { error } = ResendingSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: "missing required field email" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "Not Found" });
+    }
+
+    if (user.verify) {
+      return res.status(400).verifica.verificationToken.json({
+        error: "Verification has already been passed",
+      });
+    }
+
+    const verifyEmail = {
+      to: email,
+      subject: "Resending Verify email",
+      html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${user.verificationToken}">Click here to verify your email</a>`,
+    };
+
+    sendEmail(verifyEmail);
+
+    res.json({ message: "Verification email sent" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, verify } = req.body;
     const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(401).json({ error: "Email or password is wrong" });
+    }
+
+    if (!user.verify) {
+      return res.status(403).json({ error: "Email is not verified" });
     }
 
     const passwordCompare = await bcrypt.compare(password, user.password);
@@ -164,4 +240,6 @@ module.exports = {
   logout,
   subscription,
   updateAvatar,
+  verification,
+  verificationResending,
 };
